@@ -5,11 +5,12 @@
 # Needed imports
 library(raster)
 library(rgdal)
+library(rgeos)
 
-bufferState <- function(country, state, buffer, folder) {
+# Download data and extract state
+getState <- function(country, state, buffer, folder) {
   data <- download_data(country, folder)
   stateContour <- extract_state(data, state)
-  plot(stateContour)
   return(stateContour)
 }
 
@@ -23,4 +24,7 @@ extract_state <- function(data, state) {
   stateContour <- data[data$NAME_1 == state,]
 }
 
-# Perform buffer
+bufferState <- function(state, buffDistance) {
+  buffState <- gBuffer(state, width=buffDistance, byid=TRUE)
+  return(buffState)
+}

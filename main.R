@@ -2,6 +2,9 @@
 # 08-02-2016
 # Thesis REG
 
+# Load needed R packages
+library(sp)
+
 # Load R files
 source('R/bufferState.R')
 
@@ -19,7 +22,20 @@ for (dir in dirList) {
 
 # Download Afar state boundaries and buffer them a little bit.
 destFolder <- shpDir
-eth <- bufferState('ETH','Afar',500, destFolder)
+afar_latlong <- getState('ETH','Afar',500, destFolder)
+plot(afar_latlong)
+
+# Transform the coordinate system to planar
+prj_string_UTM37 <- CRS("+proj=utm +zone=37 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+afar <- spTransform(afar_latlong, CRSobj = prj_string_UTM37)
 
 # Save to shapefile
-writeOGR(eth,(file.path(shpDir, 'Afar')),'Afar',driver="ESRI Shapefile")
+writeOGR(afar,(file.path(shpDir, 'Afar')),'Afar',driver="ESRI Shapefile")
+
+# Buffer the state with a distance of 10 km (to contain all points)
+buffState <- bufferState(afar,5250)
+plot(buffState)
+plot(afar, add=TRUE)
+
+# Save buffer to shapefile
+writeOGR(buffState,(file.path(shpDir, 'Afar')),'Afar_buffer',driver="ESRI Shapefile")
