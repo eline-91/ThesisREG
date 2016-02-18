@@ -41,7 +41,7 @@ afar <- spTransform(afar_latlong, CRSobj = prj_string_UTM37)
 # Save to shapefile
 writeOGR(afar,(file.path(shpDir, 'Afar')),'Afar',driver="ESRI Shapefile")
 
-# Buffer the state with a distance of 10 km (to contain all points)
+# Buffer the state with a distance of 5.25 km (to contain all points)
 buffState <- bufferState(afar,5250)
 plot(buffState)
 plot(afar, add=TRUE)
