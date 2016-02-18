@@ -93,5 +93,5 @@ brick_intersect <- intersect(bri,buffState)
 plot(brick_intersect)
 writeRaster(brick_intersect, filename = "data/test/test_167_54_trueColor.tif", format = "GTiff", overwrite=TRUE)
 
-
+# Test commit
 
