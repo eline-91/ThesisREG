@@ -12,6 +12,8 @@ library(raster)
 # Load R files
 source('R/bufferState.R')
 source('R/cropFiles.R')
+source('R/simplifyRaster.R')
+source('R/getIntersection.R')
 
 # Used folders
 mainDir <- getwd()
@@ -22,6 +24,7 @@ outputDir <- 'output'
 gcpFolder <- "data/GCP_Coordinates"
 im_dry <- "data/Images_DrySeason"
 im_wet <- "data/Images_WetSeason"
+testDir <- 'data/test'
 
 # Create data structure
 dirList <- list(dataDir, bricksDir, shpDir, outputDir)
@@ -69,29 +72,10 @@ ggplot(region.df, aes(x=long,y=lat,group=group))+
   coord_fixed()
 
 
-# één voor één openen om geheugen te beperken
-file1 <- file.path(im_dry, "LC81670542014347", "LC81670542014347LGN00_band2.tif")
-file2 <- file.path(im_dry, "LC81670542014347", "LC81670542014347LGN00_band3.tif")
-file3 <- file.path(im_dry, "LC81670542014347", "LC81670542014347LGN00_band4.tif")
-
-source('R/cropFiles.R')
 folderPaths <- list.files('data/Images_DrySeason', full.names = TRUE)
-e_buffer <- extent(buffState)
 bandnames <- c("band1","band2","band3","band4","band5","band6","band7")
 for (folder in folderPaths) {
-  crop_files(folder, bandnames, e_buffer, bricksDir)
+  #simplify_raster(folder, shpDir)
+  int <- get_intersection(folder, shpDir, buffState, plot=T)
+  crop_files(folder, bandnames, int, bricksDir)
 }
-
-
-
-filelist <- list(file1,file2, file3)
-bri <- brick(filelist)
-plot(bri)
-
-brick_intersect <- intersect(bri,buffState)
-
-plot(brick_intersect)
-writeRaster(brick_intersect, filename = "data/test/test_167_54_trueColor.tif", format = "GTiff", overwrite=TRUE)
-
-# Test commit
-
