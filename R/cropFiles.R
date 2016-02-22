@@ -18,7 +18,7 @@ crop_files <- function(inputFolder, bandNames, extent, outputFolder) {
   if (file.exists(outFn)) {
     print("Exists!")
   } else {
-    print("Unfortunately there's nothing to crop. Whole raster will be saved.")
+    print("Unfortunately there's nothing to crop.")
 #     bri <- brick(st, filename = outFn, overwrite=TRUE)
 #     
 #     if (file.exists(outFn)) {
