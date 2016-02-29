@@ -36,21 +36,24 @@ for (dir in dirList) {
 destFolder <- shpDir
 afar_latlong <- getState('ETH','Afar',500, destFolder)
 plot(afar_latlong)
-
 # Transform the coordinate system to planar
 prj_string_UTM37 <- CRS("+proj=utm +zone=37 +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 afar <- spTransform(afar_latlong, CRSobj = prj_string_UTM37)
-
 # Save to shapefile
 writeOGR(afar,(file.path(shpDir, 'Afar')),'Afar',driver="ESRI Shapefile")
 
-# Buffer the state with a distance of 5.25 km (to contain all points)
-buffState <- bufferState(afar,5250)
+# Open shp layer to perform buffer on
+afar_edit <- readOGR((file.path(shpDir, 'Afar')), 'Afar_Edit')
+plot(afar_edit)
+# Buffer the state with a distance of 20 km
+buffState <- bufferState(afar_edit,20000)
 plot(buffState)
-plot(afar, add=TRUE)
+plot(afar_edit, add=TRUE)
 
 # Save buffer to shapefile
-writeOGR(buffState,(file.path(shpDir, 'Afar')),'Afar_buffer',driver="ESRI Shapefile")
+#fn <- 'Afar_buffer'
+fn <- 'Afar_Edit_Buffer'
+writeOGR(buffState,(file.path(shpDir, 'Afar')),fn,driver="ESRI Shapefile")
 
 # Show GCPs on top
 gcps_latlong <- readOGR(gcpFolder, "GCP_Coords")
@@ -75,7 +78,18 @@ ggplot(region.df, aes(x=long,y=lat,group=group))+
 folderPaths <- list.files('data/Images_DrySeason', full.names = TRUE)
 bandnames <- c("band1","band2","band3","band4","band5","band6","band7")
 for (folder in folderPaths) {
-  #simplify_raster(folder, shpDir)
-  int <- get_intersection(folder, shpDir, buffState, plot=T)
-  crop_files(folder, bandnames, int, bricksDir)
+  simplify_raster(folder, shpDir)
+  #int <- get_intersection(folder, shpDir, buffState, plot=T)
+  #crop_files(folder, bandnames, int, bricksDir)
 }
+
+# Compare path 167 with path 168
+# Row: 52; bands 3, 4, 5
+x = raster('data/Images_DrySeason/LC81670522014347/LC81670522014347LGN00_sr_band5.tif')
+y = raster('data/Images_DrySeason/LC81680522014354/LC81680522014354LGN00_sr_band5.tif')
+
+source('R/compareRasters.R')
+substract_rasters(x = x,y = y, saveAsTiff = T, fn = "data/test/substraction5")
+
+# Mosaicing
+
