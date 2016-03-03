@@ -25,9 +25,10 @@ gcpFolder <- "data/GCP_Coordinates"
 im_dry <- "data/Images_DrySeason"
 im_wet <- "data/Images_WetSeason"
 testDir <- 'data/test'
+tiffDir <- 'data/tiff'
 
 # Create data structure
-dirList <- list(dataDir, bricksDir, shpDir, outputDir)
+dirList <- list(dataDir, bricksDir, shpDir, outputDir, testDir, tiffDir)
 for (dir in dirList) {
   dir.create(file.path(mainDir, dir), showWarnings = FALSE)
 }
@@ -46,7 +47,7 @@ writeOGR(afar,(file.path(shpDir, 'Afar')),'Afar',driver="ESRI Shapefile")
 afar_edit <- readOGR((file.path(shpDir, 'Afar')), 'Afar_Edit')
 plot(afar_edit)
 # Buffer the state with a distance of 20 km
-buffState <- bufferState(afar_edit,20000)
+buffState <- bufferState(afar_edit,19000)
 plot(buffState)
 plot(afar_edit, add=TRUE)
 
@@ -78,9 +79,15 @@ ggplot(region.df, aes(x=long,y=lat,group=group))+
 folderPaths <- list.files('data/Images_DrySeason', full.names = TRUE)
 bandnames <- c("band1","band2","band3","band4","band5","band6","band7")
 for (folder in folderPaths) {
-  simplify_raster(folder, shpDir)
-  #int <- get_intersection(folder, shpDir, buffState, plot=T)
-  #crop_files(folder, bandnames, int, bricksDir)
+  #simplify_raster(folder, shpDir)
+  int <- get_intersection(folder, shpDir, buffState, plot=T)
+  crop_files(folder, bandnames, int, bricksDir)
+}
+
+for (folder in folderPaths) {
+  #simplify_raster(folder, shpDir)
+  int <- get_intersection(folder, shpDir, buffState, plot=T)
+  crop_files(folder, bandnames, int, tiffDir, saveAsTiff = TRUE)
 }
 
 # Compare path 167 with path 168
@@ -91,5 +98,12 @@ y = raster('data/Images_DrySeason/LC81680522014354/LC81680522014354LGN00_sr_band
 source('R/compareRasters.R')
 substract_rasters(x = x,y = y, saveAsTiff = T, fn = "data/test/substraction5")
 
-# Mosaicing
+# Compare path 167 with each other
+# Row: 52 and 53; bands 3, 4, 5
+x = raster('data/Images_DrySeason/LC81670522014347/LC81670522014347LGN00_sr_band3.tif')
+y = raster('data/Images_DrySeason/LC81670532014347/LC81670532014347LGN00_sr_band3.tif')
 
+source('R/compareRasters.R')
+substract_rasters(x = x,y = y, saveAsTiff = T, fn = "data/test/substraction3_167")
+
+# Mosaicing: Perform mosaicRaster.R
