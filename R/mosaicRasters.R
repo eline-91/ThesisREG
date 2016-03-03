@@ -10,8 +10,9 @@ charvec <- c(file1,file2, file3)
 mos167 <- mosaic_rasters(charvec, dst_dataset = 'data/tiff/path_167.tif', output_Raster = TRUE)
 class(mos167)
 names(mos167) <- c("band1","band2","band3","band4","band5","band6","band7")
-writeRaster(mos167, filename = 'data/bricks/path_167.grd')
+writeRaster(mos167, filename = 'data/bricks/path_167.grd', overwrite = TRUE)
 plot(mos167)
+writeRaster(mos167, filename = 'data/img/path_167.img', format = 'HFA', overwrite = TRUE)
 
 
 # Path 168
@@ -25,3 +26,4 @@ class(mos168)
 names(mos168) <- c("band1","band2","band3","band4","band5","band6","band7")
 writeRaster(mos168, filename = 'data/bricks/path_168.grd')
 plot(mos168)
+writeRaster(mos168, filename = 'data/img/path_168.img', format = 'HFA', overwrite = TRUE)

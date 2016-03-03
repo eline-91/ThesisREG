@@ -26,9 +26,10 @@ im_dry <- "data/Images_DrySeason"
 im_wet <- "data/Images_WetSeason"
 testDir <- 'data/test'
 tiffDir <- 'data/tiff'
+imgFile <- 'data/img'
 
 # Create data structure
-dirList <- list(dataDir, bricksDir, shpDir, outputDir, testDir, tiffDir)
+dirList <- list(dataDir, bricksDir, shpDir, outputDir, testDir, tiffDir, imgFile)
 for (dir in dirList) {
   dir.create(file.path(mainDir, dir), showWarnings = FALSE)
 }
