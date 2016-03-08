@@ -108,3 +108,49 @@ source('R/compareRasters.R')
 substract_rasters(x = x,y = y, saveAsTiff = T, fn = "data/test/substraction3_167")
 
 # Mosaicing: Perform mosaicRaster.R
+
+# Training areas
+samples <- readOGR('data/train_points.kml', layer = 'train_points')
+samplePoints <- spTransform(samples, CRSobj = prj_string_UTM37)
+writeOGR(samplePoints,(file.path(shpDir, 'samples')),'samples',driver="ESRI Shapefile")
+
+
+sam <- readOGR('data/test', layer = 'samples_Merge')
+str(sam@data$Class)
+
+# Convert string class values into numeric codes
+sam@data$Code <- as.numeric(sam@data$Class)
+
+# Rasterize the sample data, using the complete mosaic raster
+mos_tot <- brick('data/tiff/path_167_168.tif')
+names(mos_tot) <- c("band1","band2","band3","band4","band5","band6","band7")
+mos <- mos_tot$band4
+plot(mos)
+classes <- rasterize(sam, mos, field='Code')
+writeRaster(classes, 'data/test/rasterizedclasses.tif', overwrite=TRUE)
+
+# Path 167 Row 54
+# Covariates
+# Load path 167
+classes <- raster('data/test/rasterizedclasses.tif')
+path167 <- brick('data/tiff/LC81670542014347_cropped.tif')
+names(path167) <- c("band1","band2","band3","band4","band5","band6","band7")
+
+# crop rasterized layer
+classes167 <- crop(classes, path167)
+covmasked <- mask(path167, classes167)
+
+names(classes167) <- "class"
+trainingsbrick <- addLayer(covmasked, classes167)
+plot(trainingsbrick)
+
+# Extract all values into a matrix
+valuetable <- getValues(trainingsbrick)
+valuetable <- na.omit(valuetable)
+valuetable <- as.data.frame(valuetable)
+head(valuetable, n = 10)
+valuetable$class <- factor(valuetable$class, levels = c(1:9))
+
+library(randomForest)
+modelRF <- randomForest(x=valuetable[ ,c(1:7)], y=valuetable$class,
+                        importance = TRUE)
