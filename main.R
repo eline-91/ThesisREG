@@ -127,13 +127,11 @@ names(mos_tot) <- c("band1","band2","band3","band4","band5","band6","band7")
 mos <- mos_tot$band4
 plot(mos)
 classes <- rasterize(sam, mos, field='Code')
-writeRaster(classes, 'data/test/rasterizedclasses.tif', overwrite=TRUE)
+writeRaster(classes, 'data/tiff/rasterizedclasses_0903.tif', overwrite=TRUE)
 
-# Path 167 Row 54
-# Covariates
 # Load path 167
-classes <- raster('data/test/rasterizedclasses.tif')
-path167 <- brick('data/tiff/LC81670542014347_cropped.tif')
+#classes <- raster('data/test/rasterizedclasses.tif')
+path167 <- brick('data/tiff/path_167.tif')
 names(path167) <- c("band1","band2","band3","band4","band5","band6","band7")
 
 # crop rasterized layer
@@ -149,8 +147,20 @@ valuetable <- getValues(trainingsbrick)
 valuetable <- na.omit(valuetable)
 valuetable <- as.data.frame(valuetable)
 head(valuetable, n = 10)
-valuetable$class <- factor(valuetable$class, levels = c(1:9))
+
+valuetable <- readRDS('data/rdata/valuetable.rds')
+
+valuetable$class <- factor(valuetable$class, levels = c(1,3:9))
 
 library(randomForest)
-modelRF <- randomForest(x=valuetable[ ,c(1:7)], y=valuetable$class,
-                        importance = TRUE)
+modelRF <- randomForest(x=valuetable[ ,c(1:7)], y=valuetable$class, importance = TRUE)
+predLC <- predict(path167, model=modelRF, na.rm=TRUE)
+
+cols <- c("darkkhaki", "forestgreen", "orange3", "darkolivegreen3", "darkgreen", "darkseagreen4", "firebrick4", "deepskyblue4")
+plot(predLC, col=cols, legend=F)
+legend("bottomright", legend=c("Acacia Woodland", "Bushland", "Farmland", "Grassland", "Prosopis", "Riverain", "Urban", "Water"), fill = cols, bg="white")
+
+writeRaster(predLC, "data/test/landcoverMap0903.tif", format="GTiff")
+r <- raster('data/test/landcoverMap0903.tif')
+plot(r, col=cols, legend=F)
+legend("bottomright", legend=c("Acacia Woodland", "Bushland", "Farmland", "Grassland", "Prosopis", "Riverain", "Urban", "Water"), fill = cols, bg="white")
