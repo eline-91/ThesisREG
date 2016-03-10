@@ -1,11 +1,5 @@
 # Method: RandomForest
-RFclassification <- function(samplePolygons, levels, classNames, image) {
-  library(randomForest)
-  
-  samplePolygons@data$Code <- as.numeric(samplePolygons@data$Class)
-  
-  
-}
+library(randomForest)
 
 sam <- readOGR('data/test', layer = 'samples_Merge')
 str(sam@data$Class)

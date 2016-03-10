@@ -1,5 +1,6 @@
 library(raster)
 library(tools)
+
 # Create folder to store asc files
 mainDir <- getwd()
 dir.create(file.path(mainDir, 'data', 'ascFiles'), showWarnings = FALSE)
