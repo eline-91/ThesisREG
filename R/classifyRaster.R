@@ -41,8 +41,6 @@ valuetable <- na.omit(valuetable)
 valuetable <- as.data.frame(valuetable)
 saveRDS(valuetable, 'data/rdata/valuetable167_Riverain_2303_2.rds')
 
-valuetable <- readRDS('data/rdata/valuetable167_Riverain_2303_2.rds')
-
 head(valuetable, n = 10)
 unique(valuetable$class)
 
@@ -51,6 +49,7 @@ valuetable$class <- factor(valuetable$class, levels = c(1:8))
 library(randomForest)
 modelRF <- randomForest(x=valuetable[ ,c(1:7)], y=valuetable$class, importance = TRUE)
 saveRDS(modelRF, 'data/rdata/modelRF_Riverain_167_2.rds')
+modelRF <- readRDS('data/rdata/modelRF_Riverain_167_2.rds')
 predLC <- predict(path167, model=modelRF, na.rm=TRUE)
 
 cols <- c("burlywood", "forestgreen", "orange3", "darkolivegreen3", "darkgreen", "darkseagreen4", "firebrick4", "deepskyblue4")

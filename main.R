@@ -77,8 +77,6 @@ ggplot(region.df, aes(x=long,y=lat,group=group))+
   geom_point(data=points,aes(x=coords.x1,y=coords.x2,group=NULL), color = 'darkgreen', size=2)+
   coord_fixed()
 
-source('R/getIntersection.R')
-source('R/cropFiles.R')
 buffState <- readOGR('data/shpFiles/Afar', 'Afar_Edit_Buffer')
 folderPaths <- list.files('data/Images_WetSeason', full.names = TRUE)
 bandnames <- c("band1","band2","band3","band4","band5","band6","band7")
@@ -110,60 +108,7 @@ y = raster('data/Images_DrySeason/LC81670532014347/LC81670532014347LGN00_sr_band
 source('R/compareRasters.R')
 substract_rasters(x = x,y = y, saveAsTiff = T, fn = "data/test/substraction3_167")
 
-# Mosaicing: Perform mosaicRaster.R
-
-# Training areas
+# Training areas from kml
 samples <- readOGR('data/train_points.kml', layer = 'train_points')
 samplePoints <- spTransform(samples, CRSobj = prj_string_UTM37)
 writeOGR(samplePoints,(file.path(shpDir, 'samples')),'samples',driver="ESRI Shapefile")
-
-
-sam <- readOGR('data/test', layer = 'samples_Merge')
-str(sam@data$Class)
-
-# Convert string class values into numeric codes
-sam@data$Code <- as.numeric(sam@data$Class)
-
-# Rasterize the sample data, using the complete mosaic raster
-mos_tot <- brick('data/tiff/path_167_168.tif')
-names(mos_tot) <- c("band1","band2","band3","band4","band5","band6","band7")
-mos <- mos_tot$band4
-plot(mos)
-classes <- rasterize(sam, mos, field='Code')
-writeRaster(classes, 'data/tiff/rasterizedclasses_0903.tif', overwrite=TRUE)
-
-# Load path 167
-#classes <- raster('data/test/rasterizedclasses.tif')
-path167 <- brick('data/tiff/path_167.tif')
-names(path167) <- c("band1","band2","band3","band4","band5","band6","band7")
-
-# crop rasterized layer
-classes167 <- crop(classes, path167)
-covmasked <- mask(path167, classes167)
-
-names(classes167) <- "class"
-trainingsbrick <- addLayer(covmasked, classes167)
-plot(trainingsbrick)
-
-# Extract all values into a matrix
-valuetable <- getValues(trainingsbrick)
-valuetable <- na.omit(valuetable)
-valuetable <- as.data.frame(valuetable)
-head(valuetable, n = 10)
-
-valuetable <- readRDS('data/rdata/valuetable.rds')
-
-valuetable$class <- factor(valuetable$class, levels = c(1,3:9))
-
-library(randomForest)
-modelRF <- randomForest(x=valuetable[ ,c(1:7)], y=valuetable$class, importance = TRUE)
-predLC <- predict(path167, model=modelRF, na.rm=TRUE)
-
-cols <- c("darkkhaki", "forestgreen", "orange3", "darkolivegreen3", "darkgreen", "darkseagreen4", "firebrick4", "deepskyblue4")
-plot(predLC, col=cols, legend=F)
-legend("bottomright", legend=c("Acacia Woodland", "Bushland", "Farmland", "Grassland", "Prosopis", "Riverain", "Urban", "Water"), fill = cols, bg="white")
-
-writeRaster(predLC, "data/test/landcoverMap0903.tif", format="GTiff")
-r <- raster('data/test/landcoverMap0903.tif')
-plot(r, col=cols, legend=F)
-legend("bottomright", legend=c("Acacia Woodland", "Bushland", "Farmland", "Grassland", "Prosopis", "Riverain", "Urban", "Water"), fill = cols, bg="white")
