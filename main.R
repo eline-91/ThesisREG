@@ -47,7 +47,8 @@ writeOGR(afar,(file.path(shpDir, 'Afar')),'Afar',driver="ESRI Shapefile")
 # Open shp layer to perform buffer on
 afar_edit <- readOGR((file.path(shpDir, 'Afar')), 'Afar_Edit')
 plot(afar_edit)
-# Buffer the state with a distance of 20 km
+
+# Buffer the state with a distance of 19 km
 buffState <- bufferState(afar_edit,19000)
 plot(buffState)
 plot(afar_edit, add=TRUE)
@@ -76,8 +77,10 @@ ggplot(region.df, aes(x=long,y=lat,group=group))+
   geom_point(data=points,aes(x=coords.x1,y=coords.x2,group=NULL), color = 'darkgreen', size=2)+
   coord_fixed()
 
-
-folderPaths <- list.files('data/Images_DrySeason', full.names = TRUE)
+source('R/getIntersection.R')
+source('R/cropFiles.R')
+buffState <- readOGR('data/shpFiles/Afar', 'Afar_Edit_Buffer')
+folderPaths <- list.files('data/Images_WetSeason', full.names = TRUE)
 bandnames <- c("band1","band2","band3","band4","band5","band6","band7")
 for (folder in folderPaths) {
   #simplify_raster(folder, shpDir)
